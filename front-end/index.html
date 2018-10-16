@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>orbitDB Order Book Demo</title>
+
+  <link href="css/bootstrap.min.css" media="all" rel="stylesheet" />
+  <link href="css/main.css" media="all" rel="stylesheet" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+
+<header class='navbar navbar-default navbar-fixed-top'>
+  <nav class='container' role='navigation'>
+    <div class='navbar-header'>
+      <a href='index.html' class='navbar-brand'>OrbitDB IPFS Order Book Demo</a>
+    </div>
+  </nav>
+</header>
+
+<section style="padding-top: 70px;">
+  <div class='container'>
+    <div class='row well well-lg'>
+      <div class='col-md-6'>
+        <h2>P2P Order Book Demo</h2>
+        <p class='lead'>
+          <a href="https://github.com/orbitdb/orbit-db" target="_blank">OrbitDB</a>
+          is a peer-to-peer database running over
+          <a href="https://ipfs.io/" target="_blank">IPFS</a>.
+          This app is a prototype implementation of a buy-sell order book
+          using this technology.
+        </p>
+        <p>
+          <a href="https://github.com/christroutner/orbit-tests" target="_blank">Fork this demo on GitHub!</a>
+        </p>
+      </div>
+      <div class='col-md-6 visible-md visible-lg'>
+        <img src='images/img-header.jpg' alt='Blast off with Bootstrap' />
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <form class="form-inline">
+          <div class="form-group">
+            <label for="peerId">Handle </label>
+            <input type="text" class="form-control" id="peerId" value="handle">
+            <!-- <button type="button" class="btn btn-default">Login Handle</button> -->
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <form class="form-inline">
+          <div class="form-group">
+            <label for="orderType">Type</label>
+            <select id="orderType">
+              <option value="buy">Buy</option>
+              <option value="sell">Sell</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Price</label>
+            <input type="text" class="form-control" id="price" placeholder="1023">
+          </div>
+
+          <div class="form-group">
+            <label for="qty">Qty</label>
+            <input type="email" class="form-control" id="qty" placeholder="123">
+          </div>
+
+          <button type="button" class="btn btn-default" onclick="addOrder()">Add Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <h4>Open Orders</h4>
+        <table class="table table-striped" id="orderTable">
+          <tr id="trHeader">
+            <th>Peer</th>
+            <th>Order</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Cancel</th>
+          </tr>
+          <tr id="trScaffold">
+            <td class="tdPeer"></td>
+            <td class="tdOrder"></td>
+            <td class="tdPrice"></td>
+            <td class="tdQty"></td>
+            <td class="tdCancel"><button type="button" class="btn btn-default" style="display: none;">Cancel</button></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+
+
+<!-- CDN -->
+<!--
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script src="https://unpkg.com/ipfs/dist/index.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+-->
+
+<!-- Local front-end Libraries -->
+<script src="js/jquery.min.js"></script>
+<script src="js/moment.min.js"></script>
+<script src="js/index.min.js"></script>
+<script src="js/Chart.min.js"></script>
+<script src="js/orbitdb.min.js"></script>
+<script src="js/bootstrap.min.js?body=1"></script>
+
+<!-- Order book libraries -->
+<script src="js/orderbook/pricechart.js"></script>
+<script src="js/orderbook/orderbook.js"></script>
+
+<script>
+
+  const LOCAL = false; // Set to false when deploying to a server.
+
+  let SERVER = `http://192.168.43.202:6543`;
+  if(!LOCAL) {
+    SERVER = `https://ipfs.p2pvps.net`;
+  }
+
+  const PRICE_URL = '/price';
+  const DB_URL = '/orderbook';
+
+  // IPFS variables.
+  let ipfs;
+
+  // Database variables.
+  let db;
+  let dbReady = false; // Flag to signal when DB is ready to use.
+
+  // Order book variables.
+  let peers; // DB entry of other peers.
+
+
+  // This function executes when the page has finished loading.
+  $(document).ready(function() {
+
+    // Initialize the price chart.
+    ctx = document.getElementById('chart1').getContext('2d');
+    ctx.canvas.width = 1000;
+		ctx.canvas.height = 300;
+    cfg = configChart();
+		chart = new Chart(ctx, cfg);
+
+    // Load IPFS and the Orbit DB.
+    loadIPFS();
+
+    // React when the user changes their handle.
+    $('#peerId').focusout(function(event) {
+      // Refresh the DOM.
+      resetTable();
+      showOrders();
+    });
+  });
+
+  async function loadIPFS() {
+    try {
+      const dbAddress = await getDbAddress();
+      console.log(`Got DB Address from price server: ${dbAddress}`);
+
+      // Create IPFS instance
+      ipfs = new Ipfs({
+        //repo: '/orbitdb/examples/browser/new/ipfs/0.27.3',
+        repo: 'ipfs-' + Math.random(),
+        start: true,
+        EXPERIMENTAL: {
+          pubsub: true,
+        },
+        config: {
+          Addresses: {
+            Swarm: [
+              // Use IPFS dev signal server
+              // '/dns4/star-signal.cloud.ipfs.team/wss/p2p-webrtc-star',
+              '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star',
+              // Use local signal server
+              // '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star',
+              "/ip4/107.170.133.32/tcp/4001/ipfs/QmUZRGLhcKXF1JyuaHgKm23LvqcoMYwtb9jmh8CkP4og3K",
+              "/ip4/139.59.174.197/tcp/4001/ipfs/QmZfTbnpvPwxCjpCG3CXJ7pfexgkBZ2kgChAiRJrTK1HsM",
+              "/ip4/139.59.6.222/tcp/4001/ipfs/QmRDcEDK9gSViAevCHiE6ghkaBCU7rTuQj4BDpmCzRvRYg",
+              "/ip4/46.101.198.170/tcp/4001/ipfs/QmePWxsFT9wY3QuukgVDB7XZpqdKhrqJTHTXU7ECLDWJqX",
+              "/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s",
+              "/ip4/198.46.197.197/tcp/4002/ipfs/QmWAm7ZPLGTgofLXZgoAzEaNkYFPsaVKKGjWscE4Fbec9P"
+            ]
+          },
+
+          //Bootstrap: [
+          //  "/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s",
+          //  "/ip4/198.46.197.197/tcp/4002/ipfs/QmWAm7ZPLGTgofLXZgoAzEaNkYFPsaVKKGjWscE4Fbec9P"
+          //]
+        }
+      })
+
+      ipfs.on('error', (e) => handleError(e))
+
+      ipfs.on('ready', async () => {
+        console.log('IPFS is ready');
+
+        // Disconnect from noisy peers
+        //ipfs.swarm.disconnect('/dns4/node0.preload.ipfs.io/tcp/443/wss/ipfs/QmZMxNdpMkewiVZLMRxaNxUeZpDUb34pWjZ1kZvsd16Zic');
+        //ipfs.swarm.disconnect('/dns4/node1.preload.ipfs.io/tcp/443/wss/ipfs/Qmbut9Ywz9YEDrz8ySBSgWyJk41Uvm2QJPhwDJzJyGFsD6');
+
+        // Create the database.
+        console.log(`Connecting to DB ${dbAddress} waiting...`);
+        orbitdb = new OrbitDB(ipfs);
+        db = await orbitdb.open(dbAddress, {
+          // If database doesn't exist, create it
+          create: true,
+          overwrite: true,
+          // Load only the local version of the database,
+          // don't load the latest from the network yet
+          localOnly: false,
+          type: 'keyvalue',
+          write: ['*'],
+        });
+
+
+        db.events.on('ready', () => {
+          console.log(`Database is ready!`)
+        })
+
+        // Load the latest local copy of the DB.
+        await db.load();
+
+        // Signal that the DB is ready for use.
+        dbReady = true;
+
+        // Retrieve existing orders from the DB.
+        showOrders();
+
+        // Attempt to match any orders in the DB.
+        matchOrders();
+
+        db.events.on('replicated', (address) => {
+          console.log(`DB just replicated with peer ${address}. Re-processing orders...`);
+          resetTable();
+          showOrders();
+          matchOrders();
+        })
+      })
+    } catch(err) {
+      console.error(`Error in loadIPFS: `, err);
+    }
+  }
+
+  function handleError(e) {
+    console.error(`Error with IPFS: `, e.stack)
+  }
+
+  // Get the price from the price API server.
+  function getPrice() {
+    return new Promise(function(resolve, reject) {
+      /*
+      $.get(`${SERVER}${PRICE_URL}`, '', function(data) {
+        return resolve(Math.round(Number(data)*100)/100);
+      })
+      .fail((jqxhr, textStatus, error) => {
+        return reject(error);
+      })
+      */
+
+      $.ajax({
+        url: `${SERVER}${PRICE_URL}`,
+        data: '',
+        method: 'GET',
+        //headers: {
+        //  'Access-Control-Allow-Origin': '*'
+        //},
+        success: function(data) {
+          return resolve(Math.round(Number(data)*100)/100);
+        },
+        error: function(jqxhr, textStatus, error) {
+          return reject(error);
+        }
+      })
+    });
+  }
+
+  // Get the DB IPFS address
+  function getDbAddress() {
+    return new Promise(function(resolve, reject) {
+      $.get(`${SERVER}${DB_URL}`, '', function(data) {
+        return resolve(data);
+      })
+      .fail((jqxhr, textStatus, error) => {
+        return reject(error);
+      })
+    });
+  }
+
+</script>
+</body>
+</html>
