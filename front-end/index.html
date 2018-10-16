@@ -74,14 +74,11 @@
     <div class="row">
       <h4>Output</h4>
       <div class="col-sm-12 well">
-        <p id="outWell"></p>
+        <p id="outWell" style="white-space: pre-line;"></p>
       </div>
     </div>
 
   </div>
-
-
-
 
 </section>
 
@@ -102,26 +99,6 @@
 
 <script>
 
-  const LOCAL = false; // Set to false when deploying to a server.
-
-  let SERVER = `http://192.168.43.202:6543`;
-  if(!LOCAL) {
-    SERVER = `https://ipfs.p2pvps.net`;
-  }
-
-  const PRICE_URL = '/price';
-  const DB_URL = '/orderbook';
-
-  // IPFS variables.
-  let ipfs;
-
-  // Database variables.
-  let db;
-  let dbReady = false; // Flag to signal when DB is ready to use.
-
-  // Order book variables.
-  let peers; // DB entry of other peers.
-
 
   // This function executes when the page has finished loading.
   $(document).ready(function() {
@@ -129,9 +106,23 @@
   });
 
   async function requestBCH() {
-    writeToWell(`Sending request...`)
+    try {
+      writeToWell(`Sending request...`)
 
+      const bchAddr = $('#bchAddr').val()
+      if(bchAddr === "") {
+        appendToWell(`Error: BCH Address can not be blank`)
+        return
+      }
 
+      //const resp = await fetch(`http://localhost:5000/coins/${bchAddr}`)
+      const resp = await fetch(`http://localhost:5000/coins/${bchAddr}`)
+      const body = await resp.json()
+      console.log(`body: ${JSON.stringify(body,null,2)}`)
+      console.log(`body.bchAddr: ${body.bchAddr}`)
+    } catch(err) {
+      console.log(`Error in requestBCH: `, err)
+    }
   }
 
   // Gets the current text in the output well.
@@ -145,7 +136,7 @@
   }
 
   // Appends a string as a new line to the output well.
-  function appentToWell(str) {
+  function appendToWell(str) {
     let wellText = $('#outWell').text()
 
     wellText = wellText + '\n' + str

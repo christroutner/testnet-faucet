@@ -123,7 +123,13 @@ async function getUsers (ctx) {
  */
 async function getCoins (ctx, next) {
   try {
-    ctx.body = { data: 'hello world!' }
+    // Get the IP of the requester.
+    const ip = ctx.request.ip // Normal usage
+    // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
+
+    const bchAddr = ctx.params.bchaddr
+
+    ctx.body = { ip, bchAddr }
 
     /*
     const user = await User.findById(ctx.params.id, '-password')
