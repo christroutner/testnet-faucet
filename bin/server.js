@@ -42,7 +42,7 @@ async function startServer () {
   modules(app)
 
   // Enable CORS for testing
-  // app.use(cors({origin: '*'}))
+  app.use(cors({origin: '*'}))
 
   // MIDDLEWARE END
 
