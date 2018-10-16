@@ -6,7 +6,7 @@ const LOCALHOST = 'http://localhost:5000'
 function cleanDb () {
   for (const collection in mongoose.connection.collections) {
     if (mongoose.connection.collections.hasOwnProperty(collection)) {
-      mongoose.connection.collections[collection].remove()
+      mongoose.connection.collections[collection].deleteMany()
     }
   }
 }
