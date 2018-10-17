@@ -100,7 +100,8 @@ module.exports = {
 // Checks if the IP address exists in the DB. Returns true or false.
 async function checkIPAddress (ip) {
   try {
-    const existingIp = await IpAddresses.findOne({ ipAddress: ip })
+    console.log(`ip`)
+    const existingIp = await IpAddresses.findOne({ ipAddress: ip.toString() })
 
     if (existingIp) return true
 
