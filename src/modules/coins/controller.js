@@ -34,11 +34,13 @@ const wallet = require('../../utils/wallet.js')
 async function getCoins (ctx, next) {
   try {
     // Get the IP of the requester.
-    // const ip = ctx.request.ip // Normal usage
+    const ip = ctx.request.ip // Normal usage
     // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
-
-    // temp testing code.
-    const ip = '123.456.789.116'
+    console.log(
+      `ctx.request.ip: ${ctx.request.ip}, header IP: ${
+        this.request.headers['X-Orig-IP']
+      }`
+    )
 
     const bchAddr = ctx.params.bchaddr
 
