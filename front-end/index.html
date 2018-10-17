@@ -118,7 +118,7 @@
       }
 
       //const resp = await fetch(`http://localhost:5000/coins/${bchAddr}`)
-      const resp = await fetch(`http://localhost:3456/coins/${bchAddr}`)
+      const resp = await fetch(`http://decatur.hopto.org:3456/coins/${bchAddr}`)
       const body = await resp.json()
       console.log(`body: ${JSON.stringify(body,null,2)}`)
 
