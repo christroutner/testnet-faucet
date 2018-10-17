@@ -2,99 +2,6 @@ const bchAddresses = require('../../models/bch-addresses')
 const ipAddresses = require('../../models/ip-addresses')
 
 /**
- * @api {post} /users Create a new user
- * @apiPermission
- * @apiVersion 1.0.0
- * @apiName CreateUser
- * @apiGroup Users
- *
- * @apiExample Example usage:
- * curl -H "Content-Type: application/json" -X POST -d '{ "user": { "username": "johndoe", "password": "secretpasas" } }' localhost:5000/users
- *
- * @apiParam {Object} user          User object (required)
- * @apiParam {String} user.username Username.
- * @apiParam {String} user.password Password.
- *
- * @apiSuccess {Object}   users           User object
- * @apiSuccess {ObjectId} users._id       User id
- * @apiSuccess {String}   users.name      User name
- * @apiSuccess {String}   users.username  User username
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "user": {
- *          "_id": "56bd1da600a526986cf65c80"
- *          "name": "John Doe"
- *          "username": "johndoe"
- *       }
- *     }
- *
- * @apiError UnprocessableEntity Missing required parameters
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 422 Unprocessable Entity
- *     {
- *       "status": 422,
- *       "error": "Unprocessable Entity"
- *     }
- */
-/*
-async function createUser (ctx) {
-  const user = new User(ctx.request.body.user)
-  try {
-    await user.save()
-  } catch (err) {
-    ctx.throw(422, err.message)
-  }
-
-  const token = user.generateToken()
-  const response = user.toJSON()
-
-  delete response.password
-
-  ctx.body = {
-    user: response,
-    token
-  }
-}
-*/
-
-/**
- * @api {get} /users Get all users
- * @apiPermission user
- * @apiVersion 1.0.0
- * @apiName GetUsers
- * @apiGroup Users
- *
- * @apiExample Example usage:
- * curl -H "Content-Type: application/json" -X GET localhost:5000/users
- *
- * @apiSuccess {Object[]} users           Array of user objects
- * @apiSuccess {ObjectId} users._id       User id
- * @apiSuccess {String}   users.name      User name
- * @apiSuccess {String}   users.username  User username
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "users": [{
- *          "_id": "56bd1da600a526986cf65c80"
- *          "name": "John Doe"
- *          "username": "johndoe"
- *       }]
- *     }
- *
- * @apiUse TokenError
- */
-/*
-async function getUsers (ctx) {
-  const users = await User.find({}, '-password')
-  ctx.body = { users }
-}
-*/
-
-/**
  * @api {get} /users/:id Get user by id
  * @apiPermission user
  * @apiVersion 1.0.0
@@ -129,7 +36,28 @@ async function getCoins (ctx, next) {
 
     const bchAddr = ctx.params.bchaddr
 
-    ctx.body = { ip, bchAddr }
+    // Check if IP Address already exists in the database.
+    const ipIsKnown = await checkIPAddress(ip)
+
+    // Check if the BCH address already exists in the database.
+    const bchIsKnown = await checkBchAddress(bchAddr)
+
+    // If either are true, deny request.
+    if (ipIsKnown || bchIsKnown || true) {
+      ctx.body = {
+        success: false,
+        message: 'IP or Address found in DB'
+      }
+      // ctx.throw(401, 'IP or Address found in DB')
+      return
+    }
+
+    // Add IP and BCH address to DB.
+
+    // Otherewise sent the payment.
+
+    // Respond with success.
+    ctx.body = { success: true }
 
     /*
     const user = await User.findById(ctx.params.id, '-password')
@@ -142,6 +70,8 @@ async function getCoins (ctx, next) {
     }
     */
   } catch (err) {
+    console.log(`Error in getCoins: `, err)
+
     if (err === 404 || err.name === 'CastError') {
       ctx.throw(404)
     }
@@ -149,101 +79,39 @@ async function getCoins (ctx, next) {
     ctx.throw(500)
   }
 
-  if (next) { return next() }
-}
-
-/**
- * @api {put} /users/:id Update a user
- * @apiPermission
- * @apiVersion 1.0.0
- * @apiName UpdateUser
- * @apiGroup Users
- *
- * @apiExample Example usage:
- * curl -H "Content-Type: application/json" -X PUT -d '{ "user": { "name": "Cool new Name" } }' localhost:5000/users/56bd1da600a526986cf65c80
- *
- * @apiParam {Object} user          User object (required)
- * @apiParam {String} user.name     Name.
- * @apiParam {String} user.username Username.
- *
- * @apiSuccess {Object}   users           User object
- * @apiSuccess {ObjectId} users._id       User id
- * @apiSuccess {String}   users.name      Updated name
- * @apiSuccess {String}   users.username  Updated username
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "user": {
- *          "_id": "56bd1da600a526986cf65c80"
- *          "name": "Cool new name"
- *          "username": "johndoe"
- *       }
- *     }
- *
- * @apiError UnprocessableEntity Missing required parameters
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 422 Unprocessable Entity
- *     {
- *       "status": 422,
- *       "error": "Unprocessable Entity"
- *     }
- *
- * @apiUse TokenError
- */
-/*
-async function updateUser (ctx) {
-  const user = ctx.body.user
-
-  Object.assign(user, ctx.request.body.user)
-
-  await user.save()
-
-  ctx.body = {
-    user
+  if (next) {
+    return next()
   }
 }
-*/
-
-/**
- * @api {delete} /users/:id Delete a user
- * @apiPermission
- * @apiVersion 1.0.0
- * @apiName DeleteUser
- * @apiGroup Users
- *
- * @apiExample Example usage:
- * curl -H "Content-Type: application/json" -X DELETE localhost:5000/users/56bd1da600a526986cf65c80
- *
- * @apiSuccess {StatusCode} 200
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true
- *     }
- *
- * @apiUse TokenError
- */
-/*
-async function deleteUser (ctx) {
-  const user = ctx.body.user
-
-  await user.remove()
-
-  ctx.status = 200
-  ctx.body = {
-    success: true
-  }
-}
-*/
 
 module.exports = {
-  // createUser,
-  // getUsers,
-  // getUser,
-  // updateUser,
-  // deleteUser
   getCoins
+}
+
+// Checks if the IP address exists in the DB. Returns true or false.
+async function checkIPAddress (ip) {
+  try {
+    const existingIp = await ipAddresses.findOne({ ipAddress: ip })
+
+    if (existingIp) return true
+
+    return false
+  } catch (err) {
+    console.log(`Error in checkIPAddress.`)
+    throw err
+  }
+}
+
+// Checks if the BCH address exists in the DB. Returns true or false.
+async function checkBchAddress (bchAddr) {
+  try {
+    const existingAddr = await bchAddresses.findOne({ bchAddress: bchAddr })
+
+    if (existingAddr) return true
+
+    return false
+  } catch (err) {
+    console.log(`Error in checkBchAddress.`)
+    throw err
+  }
 }

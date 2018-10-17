@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 
 const ipAddressModel = new mongoose.Schema({
-  ipAddresses: []
+  ipAddress: { type: String },
+  timestamp: { type: String }
 })
 
 // export default mongoose.model('user', User)

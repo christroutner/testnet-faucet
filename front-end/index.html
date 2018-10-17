@@ -118,6 +118,12 @@
       //const resp = await fetch(`http://localhost:5000/coins/${bchAddr}`)
       const resp = await fetch(`http://localhost:5000/coins/${bchAddr}`)
       const body = await resp.json()
+
+      if(!body.success) {
+        appendToWell(`Error: This BCH address has been used before, or you need to wait 24 hours to request from this IP address.`)
+        return
+      }
+
       console.log(`body: ${JSON.stringify(body,null,2)}`)
       console.log(`body.bchAddr: ${body.bchAddr}`)
     } catch(err) {

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const bchAddressModel = new mongoose.Schema({
-  bchAddresses: []
+  bchAddress: { type: String }
 })
 
 // export default mongoose.model('user', User)
