@@ -64,8 +64,10 @@ async function getCoins (ctx, next) {
         success: false,
         message: 'Invalid BCH cash address.'
       }
+      console.log(`Rejected because invalid BCH testnet address.`)
       return
     }
+    console.log(`Send funds. TXID: ${txid}`)
 
     // Add IP and BCH address to DB.
     await saveIp(ip)
