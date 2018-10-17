@@ -36,13 +36,10 @@ async function getCoins (ctx, next) {
     // Get the IP of the requester.
     const ip = ctx.request.ip // Normal usage
     // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
-    console.log(
-      `ctx.request.ip: ${ctx.request.ip}, header IP: ${
-        ctx.request.headers['X-Orig-IP']
-      }`
-    )
 
     const bchAddr = ctx.params.bchaddr
+
+    console.log(`Requesting IP: ${ip}, Address: ${bchAddr}`)
 
     // Check if IP Address already exists in the database.
     const ipIsKnown = await checkIPAddress(ip)
@@ -56,6 +53,7 @@ async function getCoins (ctx, next) {
         success: false,
         message: 'IP or Address found in DB'
       }
+      console.log(`Rejected due to repeat BCH or IP address.`)
       return
     }
 
