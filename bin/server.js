@@ -12,6 +12,9 @@ const cors = require('kcors')
 const config = require('../config')
 const errorMiddleware = require('../src/middleware')
 
+// Load the IP Address model.
+const IpAddresses = require('../src/models/ip-addresses')
+
 async function startServer () {
   // Create a Koa instance.
   const app = new Koa()
@@ -52,9 +55,36 @@ async function startServer () {
   await app.listen(config.port)
   console.log(`Server started on ${config.port}`)
 
+  // Cleanup the IP address in the DB every 30 minutes.
+  setInterval(function () { cleanIPAddresses() }, 1800000)
+
   return app
 }
 // startServer()
+
+async function cleanIPAddresses () {
+  try {
+    // Get all IP addresses in the database.
+    const existingIps = await IpAddresses.find({})
+
+    for (var i = 0; i < existingIps.length; i++) {
+      const thisIp = existingIps[i]
+      const thisTimestamp = new Date(thisIp.timestamp)
+
+      const now = new Date()
+      const oneDay = 1000 * 60 * 60 * 24
+      const oneDayAgo = now.getTime() - oneDay
+      const yesterday = new Date(oneDayAgo)
+
+      // Remove the IP from the database if it's older than 24 hours.
+      if (thisTimestamp.getTime() < yesterday.getTime()) {
+        await thisIp.remove()
+      }
+    }
+  } catch (err) {
+    console.log(`Error in cleanIpAddresses: `, err)
+  }
+}
 
 // export default app
 // module.exports = app

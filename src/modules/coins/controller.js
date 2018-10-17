@@ -1,3 +1,5 @@
+
+// Instantiate the models.
 const BchAddresses = require('../../models/bch-addresses')
 const IpAddresses = require('../../models/ip-addresses')
 
@@ -35,7 +37,7 @@ async function getCoins (ctx, next) {
     // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
 
     // temp testing code.
-    const ip = '123.456.789.111'
+    const ip = '123.456.789.112'
 
     const bchAddr = ctx.params.bchaddr
 
