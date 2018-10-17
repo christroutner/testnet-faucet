@@ -38,7 +38,7 @@ async function getCoins (ctx, next) {
     // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
     console.log(
       `ctx.request.ip: ${ctx.request.ip}, header IP: ${
-        this.request.headers['X-Orig-IP']
+        ctx.request.headers['X-Orig-IP']
       }`
     )
 
