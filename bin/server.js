@@ -8,6 +8,7 @@ const passport = require('koa-passport')
 const mount = require('koa-mount')
 const serve = require('koa-static')
 const cors = require('kcors')
+const wallet = require('../src/utils/wallet')
 
 const config = require('../config')
 const errorMiddleware = require('../src/middleware')
