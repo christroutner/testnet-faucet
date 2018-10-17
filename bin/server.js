@@ -59,6 +59,9 @@ async function startServer () {
   // Cleanup the IP address in the DB every 30 minutes.
   setInterval(function () { cleanIPAddresses() }, 1800000)
 
+  // Consolidate UTXOs every hour
+  setInterval(function () { wallet.consolidateUTXOs() }, 1800000 * 2)
+
   return app
 }
 // startServer()
