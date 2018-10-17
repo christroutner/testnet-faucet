@@ -18,7 +18,8 @@ util.inspect.defaultOptions = {
 const BB = require('bitbox-sdk/lib/bitbox-sdk').default
 // const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v1/` })
 // const BITBOX = new BB({ restURL: `http://localhost:3000/v1/` })
-const BITBOX = new BB({ restURL: `http://decatur.hopto.org:3003/v1/` })
+// const BITBOX = new BB({ restURL: `http://decatur.hopto.org:3003/v1/` })
+const BITBOX = new BB({ restURL: `http://192.168.0.13:3003/v1/` })
 
 const walletInfo = require(`../../wallet.json`)
 
