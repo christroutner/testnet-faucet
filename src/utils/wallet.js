@@ -16,8 +16,8 @@ util.inspect.defaultOptions = {
 }
 
 const BB = require('bitbox-sdk/lib/bitbox-sdk').default
-// const BITBOX = new BB({restURL: `https://trest.bitcoin.com/v1/`})
-const BITBOX = new BB({ restURL: `http://localhost:3000/v1/` })
+const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v1/` })
+// const BITBOX = new BB({ restURL: `http://localhost:3000/v1/` })
 
 const walletInfo = require(`../../wallet.json`)
 
@@ -88,14 +88,14 @@ async function consolidateUTXOs () {
     // sign w/ HDNode
     let redeemScript
     inputs.forEach((input, index) => {
-    // console.log(`inputs[${index}]: ${util.inspect(inputs[index])}`)
+      // console.log(`inputs[${index}]: ${util.inspect(inputs[index])}`)
       transactionBuilder.sign(
-      index,
-      keyPair,
-      redeemScript,
-      transactionBuilder.hashTypes.SIGHASH_ALL,
-      inputs[index].satoshis
-    )
+        index,
+        keyPair,
+        redeemScript,
+        transactionBuilder.hashTypes.SIGHASH_ALL,
+        inputs[index].satoshis
+      )
     })
 
     // build tx
