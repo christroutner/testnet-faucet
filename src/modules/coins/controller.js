@@ -1,5 +1,5 @@
-const bchAddresses = require('../../models/bch-addresses')
-const ipAddresses = require('../../models/ip-addresses')
+const BchAddresses = require('../../models/bch-addresses')
+const IpAddresses = require('../../models/ip-addresses')
 
 /**
  * @api {get} /users/:id Get user by id
@@ -31,8 +31,11 @@ const ipAddresses = require('../../models/ip-addresses')
 async function getCoins (ctx, next) {
   try {
     // Get the IP of the requester.
-    const ip = ctx.request.ip // Normal usage
+    // const ip = ctx.request.ip // Normal usage
     // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
+
+    // temp testing code.
+    const ip = '123.456.789.111'
 
     const bchAddr = ctx.params.bchaddr
 
@@ -43,16 +46,17 @@ async function getCoins (ctx, next) {
     const bchIsKnown = await checkBchAddress(bchAddr)
 
     // If either are true, deny request.
-    if (ipIsKnown || bchIsKnown || true) {
+    if (ipIsKnown || bchIsKnown) {
       ctx.body = {
         success: false,
         message: 'IP or Address found in DB'
       }
-      // ctx.throw(401, 'IP or Address found in DB')
       return
     }
 
     // Add IP and BCH address to DB.
+    await saveIp(ip)
+    await saveAddr(bchAddr)
 
     // Otherewise sent the payment.
 
@@ -91,7 +95,7 @@ module.exports = {
 // Checks if the IP address exists in the DB. Returns true or false.
 async function checkIPAddress (ip) {
   try {
-    const existingIp = await ipAddresses.findOne({ ipAddress: ip })
+    const existingIp = await IpAddresses.findOne({ ipAddress: ip })
 
     if (existingIp) return true
 
@@ -105,13 +109,45 @@ async function checkIPAddress (ip) {
 // Checks if the BCH address exists in the DB. Returns true or false.
 async function checkBchAddress (bchAddr) {
   try {
-    const existingAddr = await bchAddresses.findOne({ bchAddress: bchAddr })
+    const existingAddr = await BchAddresses.findOne({ bchAddress: bchAddr })
 
     if (existingAddr) return true
 
     return false
   } catch (err) {
     console.log(`Error in checkBchAddress.`)
+    throw err
+  }
+}
+
+// Saves the IP address to the database.
+async function saveIp (ip) {
+  try {
+    const newIp = new IpAddresses()
+
+    newIp.ipAddress = ip
+
+    const now = new Date()
+    const timestamp = now.toISOString()
+    newIp.timestamp = timestamp
+
+    await newIp.save()
+  } catch (err) {
+    console.log(`Error in saveIp().`)
+    throw err
+  }
+}
+
+// Saves the BCH address to the database.
+async function saveAddr (bchAddr) {
+  try {
+    const newAddr = new BchAddresses()
+
+    newAddr.bchAddress = bchAddr
+
+    await newAddr.save()
+  } catch (err) {
+    console.log(`Error in saveAddr().`)
     throw err
   }
 }

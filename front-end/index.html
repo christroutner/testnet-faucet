@@ -126,6 +126,8 @@
 
       console.log(`body: ${JSON.stringify(body,null,2)}`)
       console.log(`body.bchAddr: ${body.bchAddr}`)
+
+      appendToWell(`Success: tBCH are on their way!`)
     } catch(err) {
       console.log(`Error in requestBCH: `, err)
     }
