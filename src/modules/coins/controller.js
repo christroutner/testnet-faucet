@@ -1,7 +1,8 @@
-
 // Instantiate the models.
 const BchAddresses = require('../../models/bch-addresses')
 const IpAddresses = require('../../models/ip-addresses')
+
+const wallet = require('../../utils/wallet.js')
 
 /**
  * @api {get} /users/:id Get user by id
@@ -37,7 +38,7 @@ async function getCoins (ctx, next) {
     // const ip = this.request.headers["X-Orig-IP"] // If behind a reverse proxy
 
     // temp testing code.
-    const ip = '123.456.789.112'
+    const ip = '123.456.789.116'
 
     const bchAddr = ctx.params.bchaddr
 
@@ -56,25 +57,25 @@ async function getCoins (ctx, next) {
       return
     }
 
+    // Otherewise sent the payment.
+    const txid = await wallet.sendBCH(bchAddr)
+    if (!txid) {
+      ctx.body = {
+        success: false,
+        message: 'Invalid BCH cash address.'
+      }
+      return
+    }
+
     // Add IP and BCH address to DB.
     await saveIp(ip)
     await saveAddr(bchAddr)
 
-    // Otherewise sent the payment.
-
     // Respond with success.
-    ctx.body = { success: true }
-
-    /*
-    const user = await User.findById(ctx.params.id, '-password')
-    if (!user) {
-      ctx.throw(404)
-    }
-
     ctx.body = {
-      user
+      success: true,
+      txid: txid
     }
-    */
   } catch (err) {
     console.log(`Error in getCoins: `, err)
 
