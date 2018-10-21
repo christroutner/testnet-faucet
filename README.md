@@ -10,6 +10,10 @@ jQuery. The back end is a Koa API server based on
 The BCH wallet functionality is implemented by [BITBOX](https://developer.bitcoin.com/bitbox),
 and the testnet donations come from [Bitcoin.com](https://developer.bitcoin.com).
 
+This application expects a `wallet.json` file in the root directory. This contains
+the mnemonic seed required to access the funds the faucet will distribute. You can
+generate a wallet using [this BITBOX example]()
+
 ## Requirements
 * node __^8.9.4__
 * npm __^5.7.1__
@@ -21,9 +25,9 @@ MIT
 The `package.json` file includes scripts to build and run a Docker container for
 this app.
 
-- `npm build` will build the Docker container. Note: It does not include the
-  `-t` flag which will build without a cache.
+- `npm run build` will build the Docker container. Note: It does not include the
+  `--no-cache` flag which will build without a cache.
 
-- `npm run` will run the Docker container. It assumes port 3000, so change this
+- `npm run docker` will run the Docker container. It assumes port 3000, so change this
   to whatever port you want to expose the server to. The format is
   `<host port>:<container port>`

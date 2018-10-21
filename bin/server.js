@@ -29,11 +29,18 @@ async function startServer() {
 
   // Connect to the Mongo Database.
   mongoose.Promise = global.Promise
-  await mongoose.connect(
-    config.database,
-    { useNewUrlParser: true }
-  )
-  mongoose.set("useCreateIndex", true) // Stop deprecation warning.
+
+  try {
+    await mongoose.connect(
+      config.database,
+      { useNewUrlParser: true }
+    )
+    mongoose.set("useCreateIndex", true) // Stop deprecation warning.
+  } catch (err) {
+    console.log(`Error trying to connect to Mongo Database: `, err)
+    console.log(`Exiting.`)
+    process.exit(0)
+  }
 
   // MIDDLEWARE START
 

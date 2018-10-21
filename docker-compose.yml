@@ -1,0 +1,22 @@
+# Start the testnet server with the command 'docker-compose up -d'
+
+mongodb:
+  image: mongo
+  ports:
+    - "27017:27017" # <host port>:<container port>
+  volumes:
+    - ./data:/data/db
+  command: mongod --smallfiles --logpath=/dev/null # -- quiet
+  restart: always
+
+bch-faucet:
+  build: .
+  dockerfile: Dockerfile
+  links:
+    - mongodb
+  ports:
+    - "3000:3456"  # <host port>:<container port>
+
+#  volumes:
+
+  restart: always

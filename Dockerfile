@@ -47,10 +47,13 @@ WORKDIR /home/myuser/testnet-faucet
 # Install dependencies
 RUN npm install
 
-# Start the application.
-CMD ["npm", "start"]
+# Copy the wallet.json file into the Docker container.
+COPY wallet.json /home/myuser/testnet-faucet/wallet.json
 
-#Dummy app just to get the container running without exiting.
+# Start the application.
+#CMD ["npm", "start"]
+
+#Dummy app just to get the container running without exiting, for debugging.
 #You can then enter the container with command: docker exec -it <container ID> /bin/bash
-#COPY dummyapp.js dummyapp.js
-#CMD ["node", "dummyapp.js"]
+COPY dummyapp.js dummyapp.js
+CMD ["node", "dummyapp.js"]

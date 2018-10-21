@@ -9,8 +9,8 @@
     "test": "NODE_ENV=test ./node_modules/.bin/mocha",
     "lint": "eslint src/**/*.js",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
-    "build": "docker build bch-faucet .",
-    "run": "docker container run --name bch-faucet -d -p 3000:3000 --rm bch-faucet"
+    "build": "docker build -t bch-faucet .",
+    "docker": "docker container run --name bch-faucet -d -p 3000:3000 bch-faucet"
   },
   "keywords": [
     "koa2-api-boilerplate",
