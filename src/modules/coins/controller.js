@@ -17,7 +17,8 @@ async function getCoins(ctx, next) {
   try {
     // Get the IP of the requester.
     const ip = ctx.request.ip // Normal usage
-    //const ipAlt = ctx.request.headers["X-Orig-IP"] // If behind a reverse proxy
+    const ipAlt = ctx.request.headers["X-Real-IP"] // If behind a reverse proxy
+    console.log(`ipAlt: ${ipAlt}`)
     console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
 
     const bchAddr = ctx.params.bchaddr
