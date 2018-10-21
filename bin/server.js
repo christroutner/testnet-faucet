@@ -1,30 +1,39 @@
-const Koa = require('koa')
-const bodyParser = require('koa-bodyparser')
-const convert = require('koa-convert')
-const logger = require('koa-logger')
-const mongoose = require('mongoose')
-const session = require('koa-generic-session')
-const passport = require('koa-passport')
-const mount = require('koa-mount')
-const serve = require('koa-static')
-const cors = require('kcors')
-const wallet = require('../src/utils/wallet')
+/*
+  This is the primary source code that starts the server.
+*/
 
-const config = require('../config')
-const errorMiddleware = require('../src/middleware')
+"use strict"
+
+const Koa = require("koa")
+const bodyParser = require("koa-bodyparser")
+const convert = require("koa-convert")
+const logger = require("koa-logger")
+const mongoose = require("mongoose")
+const session = require("koa-generic-session")
+const passport = require("koa-passport")
+const mount = require("koa-mount")
+const serve = require("koa-static")
+const cors = require("kcors")
+const wallet = require("../src/utils/wallet")
+
+const config = require("../config")
+const errorMiddleware = require("../src/middleware")
 
 // Load the IP Address model.
-const IpAddresses = require('../src/models/ip-addresses')
+const IpAddresses = require("../src/models/ip-addresses")
 
-async function startServer () {
+async function startServer() {
   // Create a Koa instance.
   const app = new Koa()
   app.keys = [config.session]
 
   // Connect to the Mongo Database.
   mongoose.Promise = global.Promise
-  await mongoose.connect(config.database, { useNewUrlParser: true })
-  mongoose.set('useCreateIndex', true) // Stop deprecation warning.
+  await mongoose.connect(
+    config.database,
+    { useNewUrlParser: true }
+  )
+  mongoose.set("useCreateIndex", true) // Stop deprecation warning.
 
   // MIDDLEWARE START
 
@@ -34,19 +43,19 @@ async function startServer () {
   app.use(errorMiddleware())
 
   // Used to generate the docs.
-  app.use(convert(mount('/docs', serve(`${process.cwd()}/docs`))))
+  app.use(convert(mount("/docs", serve(`${process.cwd()}/docs`))))
 
   // User Authentication
-  require('../config/passport')
+  require("../config/passport")
   app.use(passport.initialize())
   app.use(passport.session())
 
   // Custom Middleware Modules
-  const modules = require('../src/modules')
+  const modules = require("../src/modules")
   modules(app)
 
   // Enable CORS for testing
-  app.use(cors({origin: '*'}))
+  app.use(cors({ origin: "*" }))
 
   // MIDDLEWARE END
 
@@ -57,16 +66,20 @@ async function startServer () {
   console.log(`Server started on ${config.port}`)
 
   // Cleanup the IP address in the DB every 30 minutes.
-  setInterval(function () { cleanIPAddresses() }, 1800000)
+  setInterval(function() {
+    cleanIPAddresses()
+  }, 1800000)
 
   // Consolidate UTXOs every hour
-  setInterval(function () { wallet.consolidateUTXOs() }, 1800000 * 2)
+  setInterval(function() {
+    wallet.consolidateUTXOs()
+  }, 1800000 * 2)
 
   return app
 }
 // startServer()
 
-async function cleanIPAddresses () {
+async function cleanIPAddresses() {
   try {
     // Get all IP addresses in the database.
     const existingIps = await IpAddresses.find({})
@@ -81,9 +94,7 @@ async function cleanIPAddresses () {
       const yesterday = new Date(oneDayAgo)
 
       // Remove the IP from the database if it's older than 24 hours.
-      if (thisTimestamp.getTime() < yesterday.getTime()) {
-        await thisIp.remove()
-      }
+      if (thisTimestamp.getTime() < yesterday.getTime()) await thisIp.remove()
     }
   } catch (err) {
     console.log(`Error in cleanIpAddresses: `, err)
