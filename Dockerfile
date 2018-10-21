@@ -51,9 +51,12 @@ RUN npm install
 COPY wallet.json /home/myuser/testnet-faucet/wallet.json
 
 # Start the application.
+COPY start-production start-production
 #CMD ["npm", "start"]
+#CMD ["./start-production"]
 
 #Dummy app just to get the container running without exiting, for debugging.
 #You can then enter the container with command: docker exec -it <container ID> /bin/bash
 COPY dummyapp.js dummyapp.js
 CMD ["node", "dummyapp.js"]
+#ENTRYPOINT ["export", "NODE_ENV=production", "node", "dummyapp.js"]

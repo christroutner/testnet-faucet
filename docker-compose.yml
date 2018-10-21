@@ -3,7 +3,7 @@
 mongodb:
   image: mongo
   ports:
-    - "27017:27017" # <host port>:<container port>
+    - "3500:27017" # <host port>:<container port>
   volumes:
     - ./data:/data/db
   command: mongod --smallfiles --logpath=/dev/null # -- quiet
