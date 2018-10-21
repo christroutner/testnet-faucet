@@ -16,10 +16,10 @@ util.inspect.defaultOptions = {
 async function getCoins(ctx, next) {
   try {
     // Get the IP of the requester.
-    const ip = ctx.request.ip // Normal usage
-    const ipAlt = ctx.request.headers["x-real-ip"] // If behind a reverse proxy
-    console.log(`ipAlt: ${ipAlt}`)
-    console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
+    //const ip = ctx.request.ip // Normal usage
+    const ip = ctx.request.headers["x-real-ip"] // If behind a reverse proxy
+    //console.log(`ipAlt: ${ipAlt}`)
+    //console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
 
     const bchAddr = ctx.params.bchaddr
 
