@@ -22,12 +22,17 @@ generate a wallet using [this BITBOX example]()
 MIT
 
 ## Docker
-The `package.json` file includes scripts to build and run a Docker container for
-this app.
+This server requires a Mongo database, so it uses Docker Compose to run in production.
+[This tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04)
+shows how to setup Docker.
+[This tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04)
+shows how to setup Docker Compose. Here are some commands to build and run this
+application with Docker Compose:
 
-- `npm run build` will build the Docker container. Note: It does not include the
-  `--no-cache` flag which will build without a cache.
+- `docker-compose build --no-cache` will build the Docker container from scratch.
+  If previously used, this will fail without first deleting the `database` folder,
+  which is created with root privileges by Docker, so it must be deleted with the
+  `sudo rm -rf database` command.
 
-- `npm run docker` will run the Docker container. It assumes port 3000, so change this
-  to whatever port you want to expose the server to. The format is
-  `<host port>:<container port>`
+- `docker-compose up -d` will run the server in the background (daemon mode).
+  The server attaches to port 3000 by default.

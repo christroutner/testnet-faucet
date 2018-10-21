@@ -59,4 +59,4 @@ docs
 
 wallet.json
 nohup.out
-data/*
+database/
