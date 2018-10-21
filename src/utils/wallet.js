@@ -2,20 +2,22 @@
   This library handles all the wallet functionality.
 */
 
+"use strict"
+
 module.exports = {
   consolidateUTXOs, // Consolidate up to 20 spendable UTXOs
   sendBCH // Send BCH to an address.
 }
 
 // Inspect utility used for debugging.
-const util = require('util')
+const util = require("util")
 util.inspect.defaultOptions = {
   showHidden: true,
   colors: true,
   depth: 1
 }
 
-const BB = require('bitbox-sdk/lib/bitbox-sdk').default
+const BB = require("bitbox-sdk/lib/bitbox-sdk").default
 // const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v1/` })
 // const BITBOX = new BB({ restURL: `http://localhost:3000/v1/` })
 // const BITBOX = new BB({ restURL: `http://decatur.hopto.org:3003/v1/` })
@@ -23,7 +25,7 @@ const BITBOX = new BB({ restURL: `http://192.168.0.13:3003/v1/` })
 
 const walletInfo = require(`../../wallet.json`)
 
-async function consolidateUTXOs () {
+async function consolidateUTXOs() {
   try {
     const mnemonic = walletInfo.mnemonic
 
@@ -31,19 +33,19 @@ async function consolidateUTXOs () {
     const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
 
     // master HDNode
-    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "testnet") // Testnet
 
     // HDNode of BIP44 account
     const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
 
-    const change = BITBOX.HDNode.derivePath(account, '0/0')
+    const change = BITBOX.HDNode.derivePath(account, "0/0")
 
     // get the cash address
     const cashAddress = BITBOX.HDNode.toCashAddress(change)
     // const cashAddress = walletInfo.cashAddress
 
     // instance of transaction builder
-    const transactionBuilder = new BITBOX.TransactionBuilder('testnet')
+    const transactionBuilder = new BITBOX.TransactionBuilder("testnet")
 
     // Combine all the utxos into the inputs of the TX.
     const u = await BITBOX.Address.utxo([cashAddress])
@@ -81,6 +83,12 @@ async function consolidateUTXOs () {
     const sendAmount = originalAmount - byteCount
     console.log(`sendAmount: ${sendAmount}`)
 
+    // Catch a bug here
+    if (sendAmount < 0) {
+      console.log(`sendAmount is negative, aborting UTXO consolidation.`)
+      return
+    }
+
     // add output w/ address and amount to send
     transactionBuilder.addOutput(cashAddress, sendAmount)
 
@@ -116,7 +124,7 @@ async function consolidateUTXOs () {
 }
 
 // Send BCH to an address
-async function sendBCH (bchAddr) {
+async function sendBCH(bchAddr) {
   try {
     // Exit if not a valid cash address.
     const isValid = validateAddress(bchAddr)
@@ -131,12 +139,12 @@ async function sendBCH (bchAddr) {
     const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
 
     // master HDNode
-    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "testnet") // Testnet
 
     // HDNode of BIP44 account
     const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
 
-    const change = BITBOX.HDNode.derivePath(account, '0/0')
+    const change = BITBOX.HDNode.derivePath(account, "0/0")
 
     const cashAddress = walletInfo.cashAddress
 
@@ -145,7 +153,7 @@ async function sendBCH (bchAddr) {
     const utxo = findBiggestUtxo(u[0])
 
     // instance of transaction builder
-    const transactionBuilder = new BITBOX.TransactionBuilder('testnet')
+    const transactionBuilder = new BITBOX.TransactionBuilder("testnet")
 
     const satoshisToSend = AMOUNT_TO_SEND
     const originalAmount = utxo.satoshis
@@ -206,7 +214,7 @@ async function sendBCH (bchAddr) {
 }
 
 // Returns the utxo with the biggest balance from an array of utxos.
-function findBiggestUtxo (utxos) {
+function findBiggestUtxo(utxos) {
   let largestAmount = 0
   let largestIndex = 0
 
@@ -223,7 +231,7 @@ function findBiggestUtxo (utxos) {
 }
 
 // Returns true if BCH address is valid, false otherwise.
-function validateAddress (bchAddr) {
+function validateAddress(bchAddr) {
   try {
     BITBOX.Address.isCashAddress(bchAddr)
     BITBOX.Address.isTestnetAddress(bchAddr)
