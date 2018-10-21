@@ -35,4 +35,4 @@ application with Docker Compose:
   `sudo rm -rf database` command.
 
 - `docker-compose up -d` will run the server in the background (daemon mode).
-  The server attaches to port 3000 by default.
+  The server attaches to port 3000 on the host by default.
