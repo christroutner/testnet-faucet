@@ -178,10 +178,10 @@ async function sendBCH(bchAddr) {
     const remainder = originalAmount - satoshisToSend - txFee
 
     // add output w/ address and amount to send
-    transactionBuilder.addOutput(cashAddress, satoshisToSend)
+    transactionBuilder.addOutput(cashAddress, remainder)
     transactionBuilder.addOutput(
       BITBOX.Address.toLegacyAddress(bchAddr),
-      remainder
+      satoshisToSend
     )
 
     // Generate a keypair from the change address.

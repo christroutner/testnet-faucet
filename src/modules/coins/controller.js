@@ -41,7 +41,7 @@ async function getCoins(ctx, next) {
       return
     }
 
-    // Otherewise sent the payment.
+    // Otherewise send the payment.
     const txid = await wallet.sendBCH(bchAddr)
     if (!txid) {
       ctx.body = {
