@@ -4,13 +4,21 @@ const IpAddresses = require("../../models/ip-addresses")
 
 const wallet = require("../../utils/wallet.js")
 
+// Inspect utility used for debugging.
+const util = require("util")
+util.inspect.defaultOptions = {
+  showHidden: true,
+  colors: true,
+  depth: 1
+}
+
 // Sends coins to the user.
 async function getCoins(ctx, next) {
   try {
     // Get the IP of the requester.
     const ip = ctx.request.ip // Normal usage
-    const ipAlt = ctx.request.headers["X-Orig-IP"] // If behind a reverse proxy
-    console.log(`ipAlt: ${ipAlt}`)
+    //const ipAlt = ctx.request.headers["X-Orig-IP"] // If behind a reverse proxy
+    console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
 
     const bchAddr = ctx.params.bchaddr
 
