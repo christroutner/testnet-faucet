@@ -12,7 +12,8 @@ and the testnet donations come from [Bitcoin.com](https://developer.bitcoin.com)
 
 This application expects a `wallet.json` file in the root directory. This contains
 the mnemonic seed required to access the funds the faucet will distribute. You can
-generate a wallet using [this BITBOX example]()
+generate a wallet using
+[this BITBOX example](https://github.com/Bitcoin-com/bitbox-javascript-sdk/blob/master/examples/applications/wallet/create-wallet/create-wallet.js)
 
 ## Requirements
 * node __^8.9.4__
