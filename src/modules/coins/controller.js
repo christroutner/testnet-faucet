@@ -44,23 +44,27 @@ async function getCoins(ctx, next) {
 
     console.log(`Requesting IP: ${ip}, Address: ${bchAddr}`)
 
-    // Check if IP Address already exists in the database.
-    const ipIsKnown = await checkIPAddress(ip)
+    // Allow sending to itself, to test the system. All other addresses use
+    // IP and address filtering to prevent abuse of the faucet.
+    if (bchAddr !== `bchtest:qqmd9unmhkpx4pkmr6fkrr8rm6y77vckjvqe8aey35`) {
+      // Check if IP Address already exists in the database.
+      const ipIsKnown = await checkIPAddress(ip)
 
-    // Check if the BCH address already exists in the database.
-    const bchIsKnown = await checkBchAddress(bchAddr)
+      // Check if the BCH address already exists in the database.
+      const bchIsKnown = await checkBchAddress(bchAddr)
 
-    // If either are true, deny request.
-    if (ipIsKnown || bchIsKnown) {
-      ctx.body = {
-        success: false,
-        message: "IP or Address found in DB"
+      // If either are true, deny request.
+      if (ipIsKnown || bchIsKnown) {
+        ctx.body = {
+          success: false,
+          message: "IP or Address found in DB"
+        }
+        console.log(`Rejected due to repeat BCH or IP address.`)
+        return
       }
-      console.log(`Rejected due to repeat BCH or IP address.`)
-      return
     }
 
-    // Otherewise send the payment.
+    // Otherwise send the payment.
     const txid = await wallet.sendBCH(bchAddr)
     if (!txid) {
       ctx.body = {
