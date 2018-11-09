@@ -1,3 +1,5 @@
+"use strict"
+
 // Instantiate the models.
 const BchAddresses = require("../../models/bch-addresses")
 const IpAddresses = require("../../models/ip-addresses")
@@ -10,6 +12,23 @@ util.inspect.defaultOptions = {
   showHidden: true,
   colors: true,
   depth: 1
+}
+
+// Return the balance of the wallet.
+async function getBalance(ctx, next) {
+  try {
+    const balance = await wallet.getBalance()
+
+    ctx.body = { balance }
+  } catch (err) {
+    console.log(`Error in getCoins: `, err)
+
+    if (err === 404 || err.name === "CastError") ctx.throw(404)
+
+    ctx.throw(500)
+  }
+
+  if (next) return next()
 }
 
 // Sends coins to the user.
@@ -73,7 +92,8 @@ async function getCoins(ctx, next) {
 }
 
 module.exports = {
-  getCoins
+  getCoins,
+  getBalance
 }
 
 // Checks if the IP address exists in the DB. Returns true or false.
