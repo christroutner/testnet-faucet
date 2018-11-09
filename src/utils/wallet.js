@@ -6,7 +6,8 @@
 
 module.exports = {
   consolidateUTXOs, // Consolidate up to 20 spendable UTXOs
-  sendBCH // Send BCH to an address.
+  sendBCH, // Send BCH to an address.
+  getBalance
 }
 
 // Inspect utility used for debugging.
@@ -239,4 +240,31 @@ function validateAddress(bchAddr) {
   } catch (err) {
     return false
   }
+}
+
+async function getBalance() {
+  const mnemonic = walletInfo.mnemonic
+
+  // root seed buffer
+  const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
+
+  // master HDNode
+  const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "testnet") // Testnet
+
+  // HDNode of BIP44 account
+  const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+
+  const change = BITBOX.HDNode.derivePath(account, "0/0")
+
+  // get the cash address
+  const cashAddress = BITBOX.HDNode.toCashAddress(change)
+
+  // first get BCH balance
+  const balanceObj = await BITBOX.Address.details([cashAddress])
+  const balance = balanceObj[0].balance
+  //console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+
+  //console.log(`BCH Balance information for ${cashAddress}:`)
+  console.log(`balance: ${balance} BCH`)
+  return balance
 }

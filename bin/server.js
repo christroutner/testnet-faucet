@@ -77,10 +77,10 @@ async function startServer() {
     cleanIPAddresses()
   }, 1800000)
 
-  // Consolidate UTXOs every hour
+  // Consolidate UTXOs
   setInterval(function() {
     wallet.consolidateUTXOs()
-  }, 1800000 * 2)
+  }, 1800000 * 6) // three hours
 
   return app
 }
