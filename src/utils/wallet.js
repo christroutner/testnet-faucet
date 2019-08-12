@@ -18,8 +18,8 @@ util.inspect.defaultOptions = {
   depth: 1
 }
 
-const BB = require("bitbox-sdk/lib/bitbox-sdk").default
-const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v1/` })
+const BB = require("bitbox-sdk").BITBOX
+const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v2/` })
 // const BITBOX = new BB({ restURL: `http://localhost:3000/v1/` })
 // const BITBOX = new BB({ restURL: `http://decatur.hopto.org:3003/v1/` })
 //const BITBOX = new BB({ restURL: `http://192.168.0.13:3003/v1/` })
@@ -243,28 +243,35 @@ function validateAddress(bchAddr) {
 }
 
 async function getBalance() {
-  const mnemonic = walletInfo.mnemonic
+  try {
+    /*
+    const mnemonic = walletInfo.mnemonic
 
-  // root seed buffer
-  const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
+    // root seed buffer
+    const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
 
-  // master HDNode
-  const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "testnet") // Testnet
+    // master HDNode
+    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "testnet") // Testnet
 
-  // HDNode of BIP44 account
-  const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+    // HDNode of BIP44 account
+    const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
 
-  const change = BITBOX.HDNode.derivePath(account, "0/0")
+    const change = BITBOX.HDNode.derivePath(account, "0/0")
 
-  // get the cash address
-  const cashAddress = BITBOX.HDNode.toCashAddress(change)
+    // get the cash address
+    const cashAddress = BITBOX.HDNode.toCashAddress(change)
+    */
 
-  // first get BCH balance
-  const balanceObj = await BITBOX.Address.details([cashAddress])
-  const balance = balanceObj[0].balance
-  //console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+    // first get BCH balance
+    const balanceObj = await BITBOX.Address.details(walletInfo.cashAddress)
+    const balance = balanceObj.balance
+    console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
-  //console.log(`BCH Balance information for ${cashAddress}:`)
-  console.log(`balance: ${balance} BCH`)
-  return balance
+    //console.log(`BCH Balance information for ${cashAddress}:`)
+    console.log(`balance: ${balance} BCH`)
+    return balance
+  } catch (err) {
+    console.log(`Error in util/wallet.js/getBalance()`)
+    throw err
+  }
 }

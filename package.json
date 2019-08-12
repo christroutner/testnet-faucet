@@ -32,9 +32,9 @@
     "url": "https://github.com/christroutner/babel-free-koa2-api-boilerplate"
   },
   "dependencies": {
-    "apidoc": "^0.16.1",
+    "apidoc": "^0.17.7",
     "bcryptjs": "^2.4.3",
-    "bitbox-sdk": "^2.0.3",
+    "bitbox-sdk": "^8.7.0",
     "glob": "^7.0.0",
     "jsonwebtoken": "^7.1.9",
     "kcors": "^2.2.1",
