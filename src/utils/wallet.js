@@ -150,8 +150,9 @@ async function sendBCH(bchAddr) {
     const cashAddress = walletInfo.cashAddress
 
     // Get the biggest UTXO, which is assumed to be spendable.
-    const u = await BITBOX.Address.utxo([cashAddress])
-    const utxo = findBiggestUtxo(u[0])
+    const u = await BITBOX.Address.utxo(cashAddress)
+    //console.log(`u: ${JSON.stringify(u, null, 2)}`)
+    const utxo = findBiggestUtxo(u.utxos)
 
     // instance of transaction builder
     const transactionBuilder = new BITBOX.TransactionBuilder("testnet")

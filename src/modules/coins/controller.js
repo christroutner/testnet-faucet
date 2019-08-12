@@ -49,6 +49,7 @@ async function getCoins(ctx, next) {
     if (bchAddr !== `bchtest:qqmd9unmhkpx4pkmr6fkrr8rm6y77vckjvqe8aey35`) {
       // Check if IP Address already exists in the database.
       const ipIsKnown = await checkIPAddress(ip)
+      //const ipIsKnown = false // Used for testing.
 
       // Check if the BCH address already exists in the database.
       const bchIsKnown = await checkBchAddress(bchAddr)
