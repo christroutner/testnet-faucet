@@ -21,7 +21,7 @@ async function getBalance(ctx, next) {
 
     ctx.body = { balance }
   } catch (err) {
-    console.log(`Error in getCoins: `, err)
+    console.log(`Error in getBalance: `, err)
 
     if (err === 404 || err.name === "CastError") ctx.throw(404)
 
