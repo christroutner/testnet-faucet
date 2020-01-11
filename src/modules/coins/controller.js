@@ -4,6 +4,7 @@
 const BchAddresses = require("../../models/bch-addresses")
 const IpAddresses = require("../../models/ip-addresses")
 
+const config = require("../../../config")
 const wallet = require("../../utils/wallet.js")
 
 // Inspect utility used for debugging.
@@ -17,6 +18,9 @@ util.inspect.defaultOptions = {
 // Return the balance of the wallet.
 async function getBalance(ctx, next) {
   try {
+    console.log(`ctx.request.ip: ${ctx.request.ip}`)
+    console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
+
     const balance = await wallet.getBalance()
 
     ctx.body = { balance }
@@ -37,7 +41,7 @@ async function getCoins(ctx, next) {
     // Get the IP of the requester.
     // const ip = ctx.request.ip // Normal usage
     const ip = ctx.request.headers["x-real-ip"] // If behind a reverse proxy
-    console.log(`ctx.request.ip: ${ipAlt}`)
+    console.log(`ctx.request.ip: ${ctx.request.ip}`)
     console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
 
     const bchAddr = ctx.params.bchaddr
@@ -46,7 +50,7 @@ async function getCoins(ctx, next) {
 
     // Allow sending to itself, to test the system. All other addresses use
     // IP and address filtering to prevent abuse of the faucet.
-    if (bchAddr !== `bchtest:qqmd9unmhkpx4pkmr6fkrr8rm6y77vckjvqe8aey35`) {
+    if (bchAddr !== config.addr) {
       // Check if IP Address already exists in the database.
       const ipIsKnown = await checkIPAddress(ip)
       //const ipIsKnown = false // Used for testing.
