@@ -10,6 +10,8 @@ module.exports = {
   getBalance
 }
 
+const config = require("../../../config")
+
 // Inspect utility used for debugging.
 const util = require("util")
 util.inspect.defaultOptions = {
@@ -55,7 +57,10 @@ async function consolidateUTXOs() {
 
     console.log(`Number of UTXOs: ${u[0].length}`)
 
-    for (let i = 0; i < u[0].length; i++) {
+    let utxoLength = u[0].length
+    if (utxoLength > 19) utxoLength = 19
+
+    for (let i = 0; i < utxoLength; i++) {
       const thisUtxo = u[0][i]
 
       // Most UTXOs will come from mining rewards, so we need to wait 100
@@ -65,9 +70,6 @@ async function consolidateUTXOs() {
         inputs.push(thisUtxo)
         transactionBuilder.addInput(thisUtxo.txid, thisUtxo.vout)
       }
-
-      // Can only do 20 UTXOs at a time.
-      if (inputs.length > 19) break
     }
 
     // original amount of satoshis in vin
@@ -132,7 +134,7 @@ async function sendBCH(bchAddr) {
     if (!isValid) return false
 
     // Amount to send in satoshis
-    const AMOUNT_TO_SEND = 10000000
+    const AMOUNT_TO_SEND = config.bchToSend
 
     const mnemonic = walletInfo.mnemonic
 

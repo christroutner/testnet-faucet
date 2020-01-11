@@ -15,11 +15,17 @@ util.inspect.defaultOptions = {
   depth: 1
 }
 
+// Track the total amount sent within an hour.
+let sentTotal = 0
+setInterval(function() {
+  sentTotal = 0
+}, 60000 * 60) // 1 hour
+
 // Return the balance of the wallet.
 async function getBalance(ctx, next) {
   try {
-    console.log(`ctx.request.ip: ${ctx.request.ip}`)
-    console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
+    // console.log(`ctx.request.ip: ${ctx.request.ip}`)
+    // console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
 
     const balance = await wallet.getBalance()
 
@@ -41,12 +47,15 @@ async function getCoins(ctx, next) {
     // Get the IP of the requester.
     // const ip = ctx.request.ip // Normal usage
     const ip = ctx.request.headers["x-real-ip"] // If behind a reverse proxy
-    console.log(`ctx.request.ip: ${ctx.request.ip}`)
-    console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
+    // console.log(`ctx.request.ip: ${ctx.request.ip}`)
+    // console.log(`ctx.request.headers: ${util.inspect(ctx.request.headers)}`)
+
+    // The website/host where the request originated.
+    const origin = ctx.request.headers.origin
 
     const bchAddr = ctx.params.bchaddr
 
-    console.log(`Requesting IP: ${ip}, Address: ${bchAddr}`)
+    console.log(`Requesting IP: ${ip}, Address: ${bchAddr}, origin: ${origin}`)
 
     // Allow sending to itself, to test the system. All other addresses use
     // IP and address filtering to prevent abuse of the faucet.
@@ -67,6 +76,27 @@ async function getCoins(ctx, next) {
         console.log(`Rejected due to repeat BCH or IP address.`)
         return
       }
+
+      // Reject if the request does not originate from the bitcoin.com website.
+      const goodOrigin = checkOrigin(origin)
+      if (!goodOrigin) {
+        ctx.body = {
+          success: false,
+          message: "Request does not originate from bitcoin.com website."
+        }
+        console.log(`Rejected due to bad origin.`)
+        return
+      }
+
+      // Reject too much BCH is being drained over the course of an hour.
+      if (sentTotal > config.bchPerHour) {
+        ctx.body = {
+          success: false,
+          message: "Too much tBCH being drained. Wait an hour and try again."
+        }
+        console.log(`Rejected due to too much tBCH being requested.`)
+        return
+      }
     }
 
     // Otherwise send the payment.
@@ -79,6 +109,9 @@ async function getCoins(ctx, next) {
       console.log(`Rejected because invalid BCH testnet address.`)
       return
     }
+
+    // Track the amount of BCH sent.
+    sentTotal += config.bchToSend
 
     // Add IP and BCH address to DB.
     await saveIp(ip)
@@ -115,6 +148,18 @@ async function checkIPAddress(ip) {
     return false
   } catch (err) {
     console.log(`Error in checkIPAddress.`)
+    throw err
+  }
+}
+
+// Returns false if the request did not orginate from the bitcoin.com website.
+function checkOrigin(origin) {
+  try {
+    if (origin === `https://developer.bitcoin.com`) return true
+
+    return false
+  } catch (err) {
+    console.log(`Error in checkOrigin.`)
     throw err
   }
 }
