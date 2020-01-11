@@ -10,7 +10,7 @@ module.exports = {
   getBalance
 }
 
-const config = require("../../../config")
+const config = require("../../config")
 
 // Inspect utility used for debugging.
 const util = require("util")
