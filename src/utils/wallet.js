@@ -51,17 +51,18 @@ async function consolidateUTXOs() {
     const transactionBuilder = new BITBOX.TransactionBuilder("testnet")
 
     // Combine all the utxos into the inputs of the TX.
-    const u = await BITBOX.Address.utxo([cashAddress])
+    let u = await BITBOX.Address.utxo([cashAddress])
+    u = u.utxos
     const inputs = []
     let originalAmount = 0
 
-    console.log(`Number of UTXOs: ${u[0].length}`)
+    console.log(`Number of UTXOs: ${u.length}`)
 
-    let utxoLength = u[0].length
+    let utxoLength = u.length
     if (utxoLength > 19) utxoLength = 19
 
     for (let i = 0; i < utxoLength; i++) {
-      const thisUtxo = u[0][i]
+      const thisUtxo = u[i]
 
       // Most UTXOs will come from mining rewards, so we need to wait 100
       // confirmations before we spend them.
