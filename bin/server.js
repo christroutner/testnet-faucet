@@ -31,10 +31,7 @@ async function startServer() {
   mongoose.Promise = global.Promise
 
   try {
-    await mongoose.connect(
-      config.database,
-      { useNewUrlParser: true }
-    )
+    await mongoose.connect(config.database, { useNewUrlParser: true })
     mongoose.set("useCreateIndex", true) // Stop deprecation warning.
   } catch (err) {
     console.log(`Error trying to connect to Mongo Database: `, err)
