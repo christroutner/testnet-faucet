@@ -44,6 +44,10 @@ async function getBalance(ctx, next) {
 // Sends coins to the user.
 async function getCoins(ctx, next) {
   try {
+    const now = new Date()
+    console.log(" ")
+    console.log(`${now.toLocaleString("en-US")}: Request for coins recieved.`)
+
     // Get the IP of the requester.
     // const ip = ctx.request.ip // Normal usage
     const ip = ctx.request.headers["x-real-ip"] // If behind a reverse proxy
