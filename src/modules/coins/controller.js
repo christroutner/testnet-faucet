@@ -46,7 +46,11 @@ async function getCoins(ctx, next) {
   try {
     const now = new Date()
     console.log(" ")
-    console.log(`${now.toLocaleString("en-US")}: Request for coins recieved.`)
+    console.log(
+      `${now.toLocaleString("en-US", {
+        timeZone: "America/Los_Angeles"
+      })}: Request for coins recieved.`
+    )
 
     // Get the IP of the requester.
     // const ip = ctx.request.ip // Normal usage
