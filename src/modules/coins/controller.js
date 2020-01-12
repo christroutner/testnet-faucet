@@ -1,3 +1,11 @@
+/*
+  Controller for the API that controls the wallet.
+
+  TODO:
+   - Add a blacklist of IP ranges. IP ranges to consider:
+     - 171.253.x.x
+*/
+
 "use strict"
 
 // Instantiate the models.
@@ -14,6 +22,10 @@ util.inspect.defaultOptions = {
   colors: true,
   depth: 1
 }
+
+// An array of strings used to compare the incoming IP address to. If there is
+// a match, then the request is rejected.
+const blackList = ["171.253"]
 
 // Track the total amount sent within an hour.
 let sentTotal = 0
@@ -104,6 +116,20 @@ async function getCoins(ctx, next) {
         }
         console.log(`Rejected due to too much tBCH being requested.`)
         return
+      }
+
+      // Reject if IP is in the blacklisted IP range.
+      for (let i = 0; i < blackList.length; i++) {
+        const elem = blackList[i]
+
+        if (ip.indexOf(elem) > -1) {
+          ctx.body = {
+            success: false,
+            message: "IP address has been black listed."
+          }
+          console.log(`Rejected due to IP in black list.`)
+          return
+        }
       }
     }
 
