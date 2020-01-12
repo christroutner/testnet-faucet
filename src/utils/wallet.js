@@ -51,7 +51,8 @@ async function consolidateUTXOs() {
     const transactionBuilder = new BITBOX.TransactionBuilder("testnet")
 
     // Combine all the utxos into the inputs of the TX.
-    let u = await BITBOX.Address.utxo([cashAddress])
+    let u = await BITBOX.Address.utxo(cashAddress)
+    console.log(`u: ${JSON.stringify(u, null, 2)}`)
     u = u.utxos
     const inputs = []
     let originalAmount = 0
