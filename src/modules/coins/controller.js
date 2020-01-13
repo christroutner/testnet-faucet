@@ -25,7 +25,7 @@ util.inspect.defaultOptions = {
 
 // An array of strings used to compare the incoming IP address to. If there is
 // a match, then the request is rejected.
-const blackList = ["171.253"]
+const blackList = ["171.253", "103.199"]
 
 // Track the total amount sent within an hour.
 let sentTotal = 0
