@@ -12,6 +12,7 @@ mongodb:
 bch-faucet:
   build: .
   dockerfile: Dockerfile
+  container_name: bch-faucet
   links:
     - mongodb
   ports:

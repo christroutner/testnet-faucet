@@ -1,8 +1,10 @@
+"use strict"
+
 // const ensureUser = require('../../middleware/validators')
-const coins = require('./controller')
+const coins = require("./controller")
 
 // export const baseUrl = '/users'
-module.exports.baseUrl = '/coins'
+module.exports.baseUrl = "/coins"
 
 module.exports.routes = [
   /*
@@ -13,19 +15,18 @@ module.exports.routes = [
       user.createUser
     ]
   },
+  */
   {
-    method: 'GET',
-    route: '/',
+    method: "GET",
+    route: "/",
     handlers: [
-      ensureUser,
-      user.getUsers
+      //ensureUser,
+      coins.getBalance
     ]
   },
-  */
-
   {
-    method: 'GET',
-    route: '/:bchaddr',
+    method: "GET",
+    route: "/:bchaddr",
     handlers: [
       // ensureUser,
       coins.getCoins

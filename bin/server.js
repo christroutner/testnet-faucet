@@ -31,10 +31,7 @@ async function startServer() {
   mongoose.Promise = global.Promise
 
   try {
-    await mongoose.connect(
-      config.database,
-      { useNewUrlParser: true }
-    )
+    await mongoose.connect(config.database, { useNewUrlParser: true })
     mongoose.set("useCreateIndex", true) // Stop deprecation warning.
   } catch (err) {
     console.log(`Error trying to connect to Mongo Database: `, err)
@@ -77,10 +74,10 @@ async function startServer() {
     cleanIPAddresses()
   }, 1800000)
 
-  // Consolidate UTXOs every hour
+  // Consolidate UTXOs
   setInterval(function() {
     wallet.consolidateUTXOs()
-  }, 1800000 * 2)
+  }, 1800000 * 6) // three hours
 
   return app
 }

@@ -6,8 +6,11 @@
 
 module.exports = {
   consolidateUTXOs, // Consolidate up to 20 spendable UTXOs
-  sendBCH // Send BCH to an address.
+  sendBCH, // Send BCH to an address.
+  getBalance
 }
+
+const config = require("../../config")
 
 // Inspect utility used for debugging.
 const util = require("util")
@@ -17,8 +20,8 @@ util.inspect.defaultOptions = {
   depth: 1
 }
 
-const BB = require("bitbox-sdk/lib/bitbox-sdk").default
-const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v1/` })
+const BB = require("bitbox-sdk").BITBOX
+const BITBOX = new BB({ restURL: `https://trest.bitcoin.com/v2/` })
 // const BITBOX = new BB({ restURL: `http://localhost:3000/v1/` })
 // const BITBOX = new BB({ restURL: `http://decatur.hopto.org:3003/v1/` })
 //const BITBOX = new BB({ restURL: `http://192.168.0.13:3003/v1/` })
@@ -48,14 +51,19 @@ async function consolidateUTXOs() {
     const transactionBuilder = new BITBOX.TransactionBuilder("testnet")
 
     // Combine all the utxos into the inputs of the TX.
-    const u = await BITBOX.Address.utxo([cashAddress])
+    let u = await BITBOX.Address.utxo(cashAddress)
+    console.log(`u: ${JSON.stringify(u, null, 2)}`)
+    u = u.utxos
     const inputs = []
     let originalAmount = 0
 
-    console.log(`Number of UTXOs: ${u[0].length}`)
+    console.log(`Number of UTXOs: ${u.length}`)
 
-    for (let i = 0; i < u[0].length; i++) {
-      const thisUtxo = u[0][i]
+    let utxoLength = u.length
+    if (utxoLength > 19) utxoLength = 19
+
+    for (let i = 0; i < utxoLength; i++) {
+      const thisUtxo = u[i]
 
       // Most UTXOs will come from mining rewards, so we need to wait 100
       // confirmations before we spend them.
@@ -64,9 +72,6 @@ async function consolidateUTXOs() {
         inputs.push(thisUtxo)
         transactionBuilder.addInput(thisUtxo.txid, thisUtxo.vout)
       }
-
-      // Can only do 20 UTXOs at a time.
-      if (inputs.length > 19) break
     }
 
     // original amount of satoshis in vin
@@ -131,7 +136,7 @@ async function sendBCH(bchAddr) {
     if (!isValid) return false
 
     // Amount to send in satoshis
-    const AMOUNT_TO_SEND = 10000000
+    const AMOUNT_TO_SEND = config.bchToSend
 
     const mnemonic = walletInfo.mnemonic
 
@@ -149,8 +154,9 @@ async function sendBCH(bchAddr) {
     const cashAddress = walletInfo.cashAddress
 
     // Get the biggest UTXO, which is assumed to be spendable.
-    const u = await BITBOX.Address.utxo([cashAddress])
-    const utxo = findBiggestUtxo(u[0])
+    const u = await BITBOX.Address.utxo(cashAddress)
+    //console.log(`u: ${JSON.stringify(u, null, 2)}`)
+    const utxo = findBiggestUtxo(u.utxos)
 
     // instance of transaction builder
     const transactionBuilder = new BITBOX.TransactionBuilder("testnet")
@@ -238,5 +244,39 @@ function validateAddress(bchAddr) {
     return true
   } catch (err) {
     return false
+  }
+}
+
+async function getBalance() {
+  try {
+    /*
+    const mnemonic = walletInfo.mnemonic
+
+    // root seed buffer
+    const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
+
+    // master HDNode
+    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "testnet") // Testnet
+
+    // HDNode of BIP44 account
+    const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+
+    const change = BITBOX.HDNode.derivePath(account, "0/0")
+
+    // get the cash address
+    const cashAddress = BITBOX.HDNode.toCashAddress(change)
+    */
+
+    // first get BCH balance
+    const balanceObj = await BITBOX.Address.details(walletInfo.cashAddress)
+    const balance = balanceObj.balance
+    console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+
+    //console.log(`BCH Balance information for ${cashAddress}:`)
+    console.log(`balance: ${balance} BCH`)
+    return balance
+  } catch (err) {
+    console.log(`Error in util/wallet.js/getBalance()`)
+    throw err
   }
 }
